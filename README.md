@@ -38,6 +38,32 @@ Title and body exclusion are kept deliberately separate: broad words like "Senio
 
 De-duplication happens by comparing each candidate job's URL against everything already in the Link column, so re-running any source never creates duplicate rows for a listing it's already added (aside from a rare edge case where two sources link to the same job via different URLs).
 
+## Setting it up locally
+
+This runs entirely inside your own Google account — there's nothing to host or deploy outside the Apps Script editor.
+
+1. **Prep the spreadsheet.** In the Google Sheet you want to use as your tracker, create two tabs:
+   - `Jobs`, with a header row: `Date Added | Company | Title | Location | Link | Source | Status`
+   - `Config`, with a header row and rows for whichever of the six types you want (`company`, `title_keyword`, `title_exclude`, `body_keyword`, `body_exclude`, `location`) — see [Filtering](#filtering) above for the format.
+
+2. **Bind the script.** In the sheet, open `Extensions > Apps Script`, delete the boilerplate, and paste in the full contents of [`job_search_agent.gs`](job_search_agent.gs).
+
+3. **Fill in your constants** near the top of the file:
+   - `MY_EMAIL` — your email address
+   - `GMAIL_LABEL_NAME` — the exact name of the Gmail label you use for job alerts (`PROCESSED_LABEL_NAME` is created automatically under it)
+   - `AI_PROVIDER` — `'gemini'` or `'claude'`, depending on which API key you set up in the next step
+
+4. **Store your API key.** Open `setApiKeys()`, paste your real Gemini and/or Claude key into the placeholder strings, run the function once (`Run > setApiKeys`), then delete the key from the source — it's now stored securely in Script Properties instead of sitting in the code.
+
+5. **Authorize the script.** The first manual run (e.g. `checkAllSourcesNow`) will prompt you to grant access to the spreadsheet, Gmail, and external URL fetches. Approve it.
+
+6. **Set up the triggers.** In the Apps Script editor, go to `Triggers > Add Trigger` and create three time-driven triggers, one per entry point:
+   - `checkATSJobs` — daily
+   - `checkGmailJobs` — every couple hours
+   - `checkGitHubTrackerJobs` — daily
+
+   You can sanity-check everything first by running `checkAllSourcesNow()` manually, which runs all three back to back and logs how many jobs were added.
+
 ## Current status
 
 Fully coded and iterated on collaboratively. Remaining setup on my end: pasting the final script into the Apps Script editor bound to the sheet, filling in personal constants (email, Gmail label name, which AI provider), running the one-time authorization and API key storage, and setting up the three time-driven triggers.
