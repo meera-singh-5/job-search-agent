@@ -19,7 +19,12 @@ There are three independent data sources, each its own function with its own tim
 
 2. **Gmail label, parsed by AI** (`checkGmailJobs`, runs every couple hours) — reads a Gmail label I already use to filter job-alert emails (LinkedIn, Handshake, etc.), sends each new email's text to an AI model (Claude or Gemini, configurable), and asks it to extract structured job postings from the email. Processed emails get a "Processed" label so they're never re-parsed. This catches companies not on the curated ATS list at all, since it just reads whatever alerts land in that inbox.
 
-3. **GitHub community trackers** (`checkGitHubTrackerJobs`, runs daily) — pulls the structured JSON data behind SimplifyJobs' `Summer2027-Internships` and `New-Grad-Positions` repos (the most-starred, most actively maintained repos of their kind), filtered to active postings only. Broad discovery net across companies I haven't manually curated.
+3. **GitHub community trackers** (`checkGitHubTrackerJobs`, runs daily) — pulls the structured JSON data behind four community-maintained repos, filtered to active postings only. Broad discovery net across companies I haven't manually curated:
+   - SimplifyJobs' `Summer2027-Internships` and `New-Grad-Positions` — the most-starred, most actively maintained repos of their kind.
+   - `vanshb03/New-Grad-2027` — a large (1000+ listing), actively updated new-grad tracker, added to widen new-grad coverage beyond SimplifyJobs.
+   - `aelew/tech-new-grad-feed` — a smaller, brand-new new-grad feed. Currently thin (single digits of postings) but costs nothing to keep polling as it grows.
+
+   All four publish the same JSON schema (`company_name`/`title`/`locations`/`url`/`active`/`date_posted`), so they plug into the existing fetch/filter/de-dupe logic unchanged.
 
 ## Filtering
 

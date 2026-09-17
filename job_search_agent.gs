@@ -30,7 +30,7 @@
  * THREE INDEPENDENT ENTRY POINTS, meant to be scheduled on separate triggers:
  *   - checkATSJobs()         -> Greenhouse/Lever/Ashby, e.g. once a day
  *   - checkGmailJobs()       -> your Gmail label, parsed by AI, e.g. every couple hours
- *   - checkGitHubTrackerJobs() -> SimplifyJobs' internship/new-grad repos, e.g. once a day
+ *   - checkGitHubTrackerJobs() -> community job-tracker repos (see GITHUB_TRACKER_SOURCES), e.g. once a day
  * All three write into the same "Jobs" tab and share one de-dupe/lock path, so
  * they're safe to run on different schedules without racing or double-adding rows.
  * Note: GitHub-tracker rows have no `description` field (that dataset doesn't
@@ -108,10 +108,15 @@ function checkGmailJobs() {
 }
 
 // ===== ENTRY POINT 3 — schedule this one separately too, e.g. once a day =====
-// Pulls from SimplifyJobs' Summer-Internships and New-Grad-Positions repos, which
-// both publish a real structured JSON file behind their README tables (not just a
-// markdown table you'd have to scrape). Covers companies you haven't added to your
-// Config company list at all, so it's a broad discovery net on top of your curated list.
+// Pulls from community-maintained trackers that each publish a real structured JSON
+// file behind their README tables (not just a markdown table you'd have to scrape).
+// Covers companies you haven't added to your Config company list at all, so it's a
+// broad discovery net on top of your curated list. vanshb03/New-Grad-2027 and
+// aelew/tech-new-grad-feed were added on top of the original two specifically to
+// widen new-grad coverage — both were verified to publish the same listings.json
+// schema (company_name/title/locations/url/active/date_posted) so they work with
+// fetchGitHubTrackerRepo() unchanged. aelew's feed is brand new and currently small
+// (single digits of postings) but costs nothing to keep polling as it grows.
 const GITHUB_TRACKER_SOURCES = [
   {
     name: 'GitHub: Summer2027-Internships',
@@ -120,6 +125,14 @@ const GITHUB_TRACKER_SOURCES = [
   {
     name: 'GitHub: New-Grad-Positions',
     url: 'https://raw.githubusercontent.com/SimplifyJobs/New-Grad-Positions/dev/.github/scripts/listings.json'
+  },
+  {
+    name: 'GitHub: New-Grad-2027 (vanshb03)',
+    url: 'https://raw.githubusercontent.com/vanshb03/New-Grad-2027/dev/.github/scripts/listings.json'
+  },
+  {
+    name: 'GitHub: tech-new-grad-feed (aelew)',
+    url: 'https://raw.githubusercontent.com/aelew/tech-new-grad-feed/main/.github/scripts/listings.json'
   }
 ];
 const MAX_GITHUB_JOB_AGE_DAYS = 30; // skip GitHub-tracker postings older than this
